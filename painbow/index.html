@@ -8,17 +8,19 @@
 <meta name="generator" content="Jekyll v4.1.1" />
 <meta property="og:title" content="Generating the Painbow Color Gradient from XKCD" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="An easy to use blogging platform with support for Jupyter Notebooks." />
-<meta property="og:description" content="An easy to use blogging platform with support for Jupyter Notebooks." />
-<link rel="canonical" href="https://michaelhotaling.github.io/blog/2022/02/03/Painbow.html" />
-<meta property="og:url" content="https://michaelhotaling.github.io/blog/2022/02/03/Painbow.html" />
+<meta name="description" content="Generating the highly controvertial color map in Python and Matplotlib" />
+<meta property="og:description" content="Generating the highly controvertial color map in Python and Matplotlib" />
+<link rel="canonical" href="https://michaelhotaling.github.io/blog/painbow/" />
+<meta property="og:url" content="https://michaelhotaling.github.io/blog/painbow/" />
 <meta property="og:site_name" content="Michael Hotaling" />
+<meta property="og:image" content="https://imgs.xkcd.com/comics/painbow_award.png" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2022-02-03T00:00:00-06:00" />
-<meta name="twitter:card" content="summary" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://imgs.xkcd.com/comics/painbow_award.png" />
 <meta property="twitter:title" content="Generating the Painbow Color Gradient from XKCD" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-02-03T00:00:00-06:00","datePublished":"2022-02-03T00:00:00-06:00","description":"An easy to use blogging platform with support for Jupyter Notebooks.","headline":"Generating the Painbow Color Gradient from XKCD","mainEntityOfPage":{"@type":"WebPage","@id":"https://michaelhotaling.github.io/blog/2022/02/03/Painbow.html"},"url":"https://michaelhotaling.github.io/blog/2022/02/03/Painbow.html"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-02-03T00:00:00-06:00","datePublished":"2022-02-03T00:00:00-06:00","description":"Generating the highly controvertial color map in Python and Matplotlib","headline":"Generating the Painbow Color Gradient from XKCD","image":"https://imgs.xkcd.com/comics/painbow_award.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://michaelhotaling.github.io/blog/painbow/"},"url":"https://michaelhotaling.github.io/blog/painbow/"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://michaelhotaling.github.io/blog/feed.xml" title="Michael Hotaling" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -89,7 +91,7 @@ window.onload = wrap_img;
         <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title p-name" itemprop="name headline">Generating the Painbow Color Gradient from XKCD</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-02-03T00:00:00-06:00" itemprop="datePublished">
+    <h1 class="post-title p-name" itemprop="name headline">Generating the Painbow Color Gradient from XKCD</h1><p class="page-description">Generating the highly controvertial color map in Python and Matplotlib</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-02-03T00:00:00-06:00" itemprop="datePublished">
         Feb 3, 2022
       </time>
        • <span class="read-time" title="Estimated read time">
@@ -99,6 +101,13 @@ window.onload = wrap_img;
     
 </span></p>
 
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#jupyter">jupyter</a>
+        
+      
+      </p>
     
 
     
@@ -141,24 +150,6 @@ window.onload = wrap_img;
 
 <div class="container" id="notebook-container">
         
-<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li>description: "Generating the highly controvertial color map in Python and Matplotlib"</li>
-<li>toc: true</li>
-<li>comments: true</li>
-<li>layout: post</li>
-<li>image: "<a href="https://imgs.xkcd.com/comics/painbow_award.png">https://imgs.xkcd.com/comics/painbow_award.png</a>"</li>
-<li>author: Prashanth Rao</li>
-<li>categories: [nlp, dataviz, web-app]</li>
-<li>hide: false</li>
-<li>search_exclude: true</li>
-<li>permalink: /lime-explainer-dashboards/</li>
-</ul>
-
-</div>
-</div>
-</div>
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -301,7 +292,15 @@ window.onload = wrap_img;
 </div>
 
 
-  </div><a class="u-url" href="/blog/2022/02/03/Painbow.html" hidden></a>
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="MichaelHotaling/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/painbow/" hidden></a>
 </article>
 
       </div>
