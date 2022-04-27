@@ -8,7 +8,6 @@ permalink: /about/
 </p>
 <br/>  
 
-<div align="center">
 <a href="https://github.com/MichaelHotaling" target="_blank">
 <img src=https://img.shields.io/badge/github-%2324292e.svg?&style=for-the-badge&logo=github&logoColor=white alt=github style="margin-bottom: 5px;" />
 </a>
@@ -18,17 +17,16 @@ permalink: /about/
 <a href="https://www.linkedin.com/in/michael-hotaling/" target="_blank">
 <img src=https://img.shields.io/badge/linkedin-%231E77B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white alt=linkedin style="margin-bottom: 5px;" />
 </a>
- </div>  
 
 
 # About me!
 
-## :technologist: I’m currently working on
+## 🧑‍💻 I’m currently working on
 - Building predictive models for semiconductor equipment to predict failures before they impact production
 - Writing a book on Practical Prognostics with Python (Stay tuned!) 
 - Developing stock trading algorithms to reduce volatility exposure and beat common index returns   
 
-## Certifications
+## My Certifications
 ### Coursera
 - [University At Buffalo - Digital Manufacturing & Design Technology Specialization](https://www.coursera.org/account/accomplishments/specialization/ZPHF4MWZVNGN)
    - [Digital Manufacturing & Design](https://www.coursera.org/account/accomplishments/records/NBW95V5U9MT7)
