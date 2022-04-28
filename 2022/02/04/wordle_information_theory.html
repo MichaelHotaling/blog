@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Solving Wordle Using Information Theory | Michael Hotaling</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Solving Wordle Using Information Theory" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="An easy to use blogging platform with support for Jupyter Notebooks." />
+<meta property="og:description" content="An easy to use blogging platform with support for Jupyter Notebooks." />
+<link rel="canonical" href="https://michaelhotaling.github.io/blog/2022/02/04/wordle_information_theory.html" />
+<meta property="og:url" content="https://michaelhotaling.github.io/blog/2022/02/04/wordle_information_theory.html" />
+<meta property="og:site_name" content="Michael Hotaling" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-02-04T00:00:00-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Solving Wordle Using Information Theory" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-02-04T00:00:00-06:00","datePublished":"2022-02-04T00:00:00-06:00","description":"An easy to use blogging platform with support for Jupyter Notebooks.","headline":"Solving Wordle Using Information Theory","mainEntityOfPage":{"@type":"WebPage","@id":"https://michaelhotaling.github.io/blog/2022/02/04/wordle_information_theory.html"},"url":"https://michaelhotaling.github.io/blog/2022/02/04/wordle_information_theory.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://michaelhotaling.github.io/blog/feed.xml" title="Michael Hotaling" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Michael Hotaling</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Solving Wordle Using Information Theory</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-02-04T00:00:00-06:00" itemprop="datePublished">
+        Feb 4, 2022
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      21 min read
+    
+</span></p>
+
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/MichaelHotaling/blog/tree/master/_notebooks/2022-02-04-wordle_information_theory.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/blog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/MichaelHotaling/blog/master?filepath=_notebooks%2F2022-02-04-wordle_information_theory.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/blog/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/MichaelHotaling/blog/blob/master/_notebooks/2022-02-04-wordle_information_theory.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/blog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          <div class="px-2">
+  <a href="https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2FMichaelHotaling%2Fblog%2Fblob%2Fmaster%2F_notebooks%2F2022-02-04-wordle_information_theory.ipynb" target="_blank">
+      <img class="notebook-badge-image" src="/blog/assets/badges/deepnote.svg" alt="Launch in Deepnote"/>
+  </a>
+</div>
+
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-02-04-wordle_information_theory.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<blockquote><p><a href="https://www.powerlanguage.co.uk/wordle/">Wordle</a> has gone pretty viral in the last couple months. It's a very simple game where you have to guess a five letter word within six guesses. Each guess reveals some information about what letters are in the word and in what positions. The faster you get the word, the better your score. - toc: true</p>
+<ul>
+<li>branch: master</li>
+<li>author: Michael Hotaling</li>
+<li>badges: true</li>
+<li>comments: true</li>
+<li>categories: [jupyter, visualizations, matplotlib,python]</li>
+<li>hide: false</li>
+<li>image: images/painbow_award.png</li>
+<li>show_image: true</li>
+<li>permalink: /painbow/</li>
+<li>hide_binder_badge: true</li>
+<li>hide_colab_badge: true</li>
+</ul>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It's an interesting game to analyze from a programatic standpoint. Is there a strategy that can ensure that we guess the word of the day in as few guesses as possible? What is the best starting word? What's the worst starting word?</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="/blog/images/copied_from_nb/images/solvewordgamesusingmath.JPG" alt="Wordle" /></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="The-Data">The Data<a class="anchor-link" href="#The-Data"> </a></h2><p>Wordle requires the player to input an actual five-letter words, so it forbids random assortment of letters like <code>prsmt</code> or <code>aeiou</code> which, theoretically would be good starting words.</p>
+<p>There's are two lists of words that you are allowed to enter in the game that are considered valid guesses. The pool of allowable entries is a little less that 13,000 words long, but these is another curated list that contains about 2,300 possible answers. These lists are actually present in the source code on the website in the order that they appear, so it is technically possible to just look up tomorrows answer, but that'd be cheating.</p>
+<p>We will pull the lists from the JS file and sort them to remove the order information. Unfortunately, there isn't a great way to pull a variable or array from a JavaScript file into Python, so some hacky string manipulation will have to do.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Legacy JS</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://web.archive.org/web/20220101000805js_/https://www.powerlanguage.co.uk/wordle/main.db1931a8.js&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+
+<span class="c1">#valid_entries = data.split(&quot;,Oa=[&quot;)[1].split(&quot;]&quot;)[0].replace(&#39;&quot;&#39;,&quot;&quot;).upper().split(&quot;,&quot;)</span>
+<span class="c1">#wordle_answers = data.split(&quot;var Ma=[&quot;)[-1].split(&quot;]&quot;)[0].replace(&#39;&quot;&#39;,&quot;&quot;).upper().split(&quot;,&quot;)</span>
+
+<span class="n">wordle_answers</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;var Aa=[&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+<span class="n">valid_entries</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,La=[&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+<span class="n">valid_entries</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">wordle_answers</span> <span class="o">+</span> <span class="n">valid_entries</span><span class="p">)))</span>
+
+<span class="n">wordle_answers</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">wordle_answers</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">wordle_answers</span><span class="p">)</span><span class="si">}</span><span class="s2"> possible answers in Wordle&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valid_entries</span><span class="p">)</span><span class="si">}</span><span class="s2"> possible words that can be entered in Wordle&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>There are 2315 possible answers in Wordle
+There are 12972 possible words that can be entered in Wordle
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Game-Mechanics">Game Mechanics<a class="anchor-link" href="#Game-Mechanics"> </a></h2><p>The game first starts with an empty 5x6 grid. We have to choose a starting word to begin the game. After we hit enter with our first guess, hidden information is revealed about the secret word using the letters of our submission. All five of our letters will change color based on if the letters are present in the hidden word.</p>
+<p><img src="/blog/images/copied_from_nb/images/ocean.JPG" alt="ocean" /></p>
+<p>If our letter turns green, it means that the letter is present in the hidden word and in the correct position. Yellow means that the letter is in the word, but in the incorrect position. Gray means that the letter is not in the hidden word at all.</p>
+<p>To begin with our analysis, we can create a function that returns the color sequence for a particular combination of words. We can start by generating a list of n length with each of the spaces representing a white space. The function will then check the position of each of the letters between two words of the same length. If the letters match up, it will overwrite the white space with a green space. If the letter is present in the word, but the positions don't match, it will overwrite the white space with a yellow space.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">indices</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A function that takes in a list and a string and returns a list of index positions within the input list</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        arr (list): List to pull the index values from</span>
+<span class="sd">        item (str): String to search for in the input list</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: list of index positions of item</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">ind</span> <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">value</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">color_sequence</span><span class="p">(</span><span class="n">guess</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">answer</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A function that takes returns a color sequence of a guess based on a predetermined answer</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        guess  (str): </span>
+<span class="sd">            The guess for the game</span>
+<span class="sd">        answer (str):</span>
+<span class="sd">            The answer for the game</span>
+<span class="sd">        emoji (bool): True</span>
+<span class="sd">            Returns a string of green, yellow and white square emojies</span>
+<span class="sd">            False will return letters G,Y, and W</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Color sequence </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">guess</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">guess</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+    
+    <span class="c1"># Start with all spaces absent</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;W&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">answer</span><span class="p">))</span>
+    
+    <span class="c1"># If correct</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="p">(</span><span class="n">g_letter</span><span class="p">,</span> <span class="n">a_letter</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">answer</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">g_letter</span> <span class="o">==</span> <span class="n">a_letter</span><span class="p">:</span>
+            <span class="n">colors</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;G&quot;</span>
+            <span class="n">guess</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">answer</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="c1"># If present</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="p">(</span><span class="n">g_letter</span><span class="p">,</span> <span class="n">a_letter</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">answer</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">g_letter</span> <span class="o">!=</span> <span class="n">a_letter</span> <span class="ow">and</span> <span class="n">g_letter</span> <span class="ow">in</span> <span class="n">answer</span> <span class="ow">and</span> <span class="n">g_letter</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">indices</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">g_letter</span><span class="p">)</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">indices</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">g_letter</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">g</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">a</span><span class="p">):</span>
+                <span class="n">colors</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Y&quot;</span>
+                <span class="n">answer</span><span class="p">[</span><span class="n">answer</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">g_letter</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                
+    <span class="n">colors</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">emoji</span><span class="p">:</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">colors</span>
+                  <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;G&quot;</span><span class="p">,</span><span class="s2">&quot;🟩&quot;</span><span class="p">)</span>
+                  <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span><span class="s2">&quot;🟨&quot;</span><span class="p">)</span>
+                  <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span><span class="s2">&quot;⬜&quot;</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">colors</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="All-Possible-Color-Sequences">All Possible Color Sequences<a class="anchor-link" href="#All-Possible-Color-Sequences"> </a></h2><p>We have a total of three different colors to choose from with a total of five positions. 
+This yields a total of $3^5$ combinations, or 243 total combos. However, there are a few combinations that can't be returns like 🟩🟩🟩🟩🟨, 🟩🟩🟩🟨🟩, 🟩🟩🟨🟩🟩 and so on.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">combinations</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="s2">&quot;⬜🟨🟩&quot;</span><span class="p">,</span> <span class="n">repeat</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)]</span>
+<span class="n">remove</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="s2">&quot;🟩🟨&quot;</span><span class="p">,</span> <span class="n">repeat</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)]</span>
+<span class="n">remove</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">remove</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="s2">&quot;🟩&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">]</span>
+
+<span class="n">combinations</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">combinations</span><span class="p">)</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">remove</span><span class="p">[</span><span class="mi">1</span><span class="p">::])</span>
+
+<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">combinations</span><span class="p">),</span> <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ind</span> <span class="o">%</span> <span class="mi">7</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>⬜⬜⬜⬜⬜ ⬜⬜⬜⬜🟨 ⬜⬜⬜⬜🟩 ⬜⬜⬜🟨⬜ ⬜⬜⬜🟨🟨 ⬜⬜⬜🟨🟩 ⬜⬜⬜🟩⬜ 
+⬜⬜⬜🟩🟨 ⬜⬜⬜🟩🟩 ⬜⬜🟨⬜⬜ ⬜⬜🟨⬜🟨 ⬜⬜🟨⬜🟩 ⬜⬜🟨🟨⬜ ⬜⬜🟨🟨🟨 
+⬜⬜🟨🟨🟩 ⬜⬜🟨🟩⬜ ⬜⬜🟨🟩🟨 ⬜⬜🟨🟩🟩 ⬜⬜🟩⬜⬜ ⬜⬜🟩⬜🟨 ⬜⬜🟩⬜🟩 
+⬜⬜🟩🟨⬜ ⬜⬜🟩🟨🟨 ⬜⬜🟩🟨🟩 ⬜⬜🟩🟩⬜ ⬜⬜🟩🟩🟨 ⬜⬜🟩🟩🟩 ⬜🟨⬜⬜⬜ 
+⬜🟨⬜⬜🟨 ⬜🟨⬜⬜🟩 ⬜🟨⬜🟨⬜ ⬜🟨⬜🟨🟨 ⬜🟨⬜🟨🟩 ⬜🟨⬜🟩⬜ ⬜🟨⬜🟩🟨 
+⬜🟨⬜🟩🟩 ⬜🟨🟨⬜⬜ ⬜🟨🟨⬜🟨 ⬜🟨🟨⬜🟩 ⬜🟨🟨🟨⬜ ⬜🟨🟨🟨🟨 ⬜🟨🟨🟨🟩 
+⬜🟨🟨🟩⬜ ⬜🟨🟨🟩🟨 ⬜🟨🟨🟩🟩 ⬜🟨🟩⬜⬜ ⬜🟨🟩⬜🟨 ⬜🟨🟩⬜🟩 ⬜🟨🟩🟨⬜ 
+⬜🟨🟩🟨🟨 ⬜🟨🟩🟨🟩 ⬜🟨🟩🟩⬜ ⬜🟨🟩🟩🟨 ⬜🟨🟩🟩🟩 ⬜🟩⬜⬜⬜ ⬜🟩⬜⬜🟨 
+⬜🟩⬜⬜🟩 ⬜🟩⬜🟨⬜ ⬜🟩⬜🟨🟨 ⬜🟩⬜🟨🟩 ⬜🟩⬜🟩⬜ ⬜🟩⬜🟩🟨 ⬜🟩⬜🟩🟩 
+⬜🟩🟨⬜⬜ ⬜🟩🟨⬜🟨 ⬜🟩🟨⬜🟩 ⬜🟩🟨🟨⬜ ⬜🟩🟨🟨🟨 ⬜🟩🟨🟨🟩 ⬜🟩🟨🟩⬜ 
+⬜🟩🟨🟩🟨 ⬜🟩🟨🟩🟩 ⬜🟩🟩⬜⬜ ⬜🟩🟩⬜🟨 ⬜🟩🟩⬜🟩 ⬜🟩🟩🟨⬜ ⬜🟩🟩🟨🟨 
+⬜🟩🟩🟨🟩 ⬜🟩🟩🟩⬜ ⬜🟩🟩🟩🟨 ⬜🟩🟩🟩🟩 🟨⬜⬜⬜⬜ 🟨⬜⬜⬜🟨 🟨⬜⬜⬜🟩 
+🟨⬜⬜🟨⬜ 🟨⬜⬜🟨🟨 🟨⬜⬜🟨🟩 🟨⬜⬜🟩⬜ 🟨⬜⬜🟩🟨 🟨⬜⬜🟩🟩 🟨⬜🟨⬜⬜ 
+🟨⬜🟨⬜🟨 🟨⬜🟨⬜🟩 🟨⬜🟨🟨⬜ 🟨⬜🟨🟨🟨 🟨⬜🟨🟨🟩 🟨⬜🟨🟩⬜ 🟨⬜🟨🟩🟨 
+🟨⬜🟨🟩🟩 🟨⬜🟩⬜⬜ 🟨⬜🟩⬜🟨 🟨⬜🟩⬜🟩 🟨⬜🟩🟨⬜ 🟨⬜🟩🟨🟨 🟨⬜🟩🟨🟩 
+🟨⬜🟩🟩⬜ 🟨⬜🟩🟩🟨 🟨⬜🟩🟩🟩 🟨🟨⬜⬜⬜ 🟨🟨⬜⬜🟨 🟨🟨⬜⬜🟩 🟨🟨⬜🟨⬜ 
+🟨🟨⬜🟨🟨 🟨🟨⬜🟨🟩 🟨🟨⬜🟩⬜ 🟨🟨⬜🟩🟨 🟨🟨⬜🟩🟩 🟨🟨🟨⬜⬜ 🟨🟨🟨⬜🟨 
+🟨🟨🟨⬜🟩 🟨🟨🟨🟨⬜ 🟨🟨🟨🟨🟨 🟨🟨🟨🟨🟩 🟨🟨🟨🟩⬜ 🟨🟨🟨🟩🟨 🟨🟨🟨🟩🟩 
+🟨🟨🟩⬜⬜ 🟨🟨🟩⬜🟨 🟨🟨🟩⬜🟩 🟨🟨🟩🟨⬜ 🟨🟨🟩🟨🟨 🟨🟨🟩🟨🟩 🟨🟨🟩🟩⬜ 
+🟨🟨🟩🟩🟨 🟨🟨🟩🟩🟩 🟨🟩⬜⬜⬜ 🟨🟩⬜⬜🟨 🟨🟩⬜⬜🟩 🟨🟩⬜🟨⬜ 🟨🟩⬜🟨🟨 
+🟨🟩⬜🟨🟩 🟨🟩⬜🟩⬜ 🟨🟩⬜🟩🟨 🟨🟩⬜🟩🟩 🟨🟩🟨⬜⬜ 🟨🟩🟨⬜🟨 🟨🟩🟨⬜🟩 
+🟨🟩🟨🟨⬜ 🟨🟩🟨🟨🟨 🟨🟩🟨🟨🟩 🟨🟩🟨🟩⬜ 🟨🟩🟨🟩🟨 🟨🟩🟨🟩🟩 🟨🟩🟩⬜⬜ 
+🟨🟩🟩⬜🟨 🟨🟩🟩⬜🟩 🟨🟩🟩🟨⬜ 🟨🟩🟩🟨🟨 🟨🟩🟩🟨🟩 🟨🟩🟩🟩⬜ 🟨🟩🟩🟩🟨 
+🟩⬜⬜⬜⬜ 🟩⬜⬜⬜🟨 🟩⬜⬜⬜🟩 🟩⬜⬜🟨⬜ 🟩⬜⬜🟨🟨 🟩⬜⬜🟨🟩 🟩⬜⬜🟩⬜ 
+🟩⬜⬜🟩🟨 🟩⬜⬜🟩🟩 🟩⬜🟨⬜⬜ 🟩⬜🟨⬜🟨 🟩⬜🟨⬜🟩 🟩⬜🟨🟨⬜ 🟩⬜🟨🟨🟨 
+🟩⬜🟨🟨🟩 🟩⬜🟨🟩⬜ 🟩⬜🟨🟩🟨 🟩⬜🟨🟩🟩 🟩⬜🟩⬜⬜ 🟩⬜🟩⬜🟨 🟩⬜🟩⬜🟩 
+🟩⬜🟩🟨⬜ 🟩⬜🟩🟨🟨 🟩⬜🟩🟨🟩 🟩⬜🟩🟩⬜ 🟩⬜🟩🟩🟨 🟩⬜🟩🟩🟩 🟩🟨⬜⬜⬜ 
+🟩🟨⬜⬜🟨 🟩🟨⬜⬜🟩 🟩🟨⬜🟨⬜ 🟩🟨⬜🟨🟨 🟩🟨⬜🟨🟩 🟩🟨⬜🟩⬜ 🟩🟨⬜🟩🟨 
+🟩🟨⬜🟩🟩 🟩🟨🟨⬜⬜ 🟩🟨🟨⬜🟨 🟩🟨🟨⬜🟩 🟩🟨🟨🟨⬜ 🟩🟨🟨🟨🟨 🟩🟨🟨🟨🟩 
+🟩🟨🟨🟩⬜ 🟩🟨🟨🟩🟨 🟩🟨🟨🟩🟩 🟩🟨🟩⬜⬜ 🟩🟨🟩⬜🟨 🟩🟨🟩⬜🟩 🟩🟨🟩🟨⬜ 
+🟩🟨🟩🟨🟨 🟩🟨🟩🟨🟩 🟩🟨🟩🟩⬜ 🟩🟨🟩🟩🟨 🟩🟩⬜⬜⬜ 🟩🟩⬜⬜🟨 🟩🟩⬜⬜🟩 
+🟩🟩⬜🟨⬜ 🟩🟩⬜🟨🟨 🟩🟩⬜🟨🟩 🟩🟩⬜🟩⬜ 🟩🟩⬜🟩🟨 🟩🟩⬜🟩🟩 🟩🟩🟨⬜⬜ 
+🟩🟩🟨⬜🟨 🟩🟩🟨⬜🟩 🟩🟩🟨🟨⬜ 🟩🟩🟨🟨🟨 🟩🟩🟨🟨🟩 🟩🟩🟨🟩⬜ 🟩🟩🟨🟩🟨 
+🟩🟩🟩⬜⬜ 🟩🟩🟩⬜🟨 🟩🟩🟩⬜🟩 🟩🟩🟩🟨⬜ 🟩🟩🟩🟨🟨 🟩🟩🟩🟩⬜ 🟩🟩🟩🟩🟩 
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We will also want to create a function that takes in a guess and a color sequence to find the words in the corpus that match the sequence.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_words_using_sequence</span><span class="p">(</span><span class="n">input_word</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">corpus</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">corpus</span> <span class="k">if</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">input_word</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span> <span class="o">==</span> <span class="n">sequence</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There is a special mechanic for duplicate letters. If a guess contains duplicate letters but the answer only has one of the letters, the first letter in the guess will appear yellow and the second will appear white. If there are two duplicate characters and they are both misplaced, they will both appear yellow. The same goes for combinations of matching and present characters. We can verify our function returns the correct values for the the following guess <code>HELLO</code> when the answer varies in the number of Ls.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Game Mechanics for Duplicate Letters&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;      H  E  L L  O&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;HYDRO&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;HYDRO&quot;</span><span class="p">),</span> <span class="s2">&quot;No L&#39;s&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;HAZEL&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;HAZEL&quot;</span><span class="p">),</span> <span class="s2">&quot;One L: misplaced&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GOLEM&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;GOLEM&quot;</span><span class="p">),</span> <span class="s2">&quot;One L: correct&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NOBLE&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;NOBLE&quot;</span><span class="p">),</span> <span class="s2">&quot;One L: correct&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LLAMA&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;LLAMA&quot;</span><span class="p">),</span> <span class="s2">&quot;Two L&#39;s: both misplaced&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ALLEY&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;ALLEY&quot;</span><span class="p">),</span> <span class="s2">&quot;Two L&#39;s: one correct, one misplaced&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TROLL&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;TROLL&quot;</span><span class="p">),</span> <span class="s2">&quot;Two L&#39;s: one correct, one misplaced&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;JOLLY&quot;</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;JOLLY&quot;</span><span class="p">),</span> <span class="s2">&quot;Two L&#39;s: both correct&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Game Mechanics for Duplicate Letters
+      H  E  L L  O
+HYDRO 🟩⬜⬜⬜🟩 No L&#39;s
+HAZEL 🟩🟨🟨⬜⬜ One L: misplaced
+GOLEM ⬜🟨🟩⬜🟨 One L: correct
+NOBLE ⬜🟨⬜🟩🟨 One L: correct
+LLAMA ⬜⬜🟨🟨⬜ Two L&#39;s: both misplaced
+ALLEY ⬜🟨🟩🟨⬜ Two L&#39;s: one correct, one misplaced
+TROLL ⬜⬜🟨🟩🟨 Two L&#39;s: one correct, one misplaced
+JOLLY ⬜⬜🟩🟩🟨 Two L&#39;s: both correct
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Calculating-the-Entropy">Calculating the Entropy<a class="anchor-link" href="#Calculating-the-Entropy"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we can generate a list of words that match the sequence we recieve from the game. This won't always be very helpful. We may get stuck in a loop of possible answers, which a common way to fail the game. For example, if we use <code>SPARK</code> and get the 🟩⬜🟩🟩⬜ sequence, we get back several possible answers.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reduced_corpus</span> <span class="o">=</span> <span class="n">get_words_using_sequence</span><span class="p">(</span><span class="s1">&#39;SPARK&#39;</span><span class="p">,</span> <span class="s2">&quot;🟩⬜🟩🟩⬜&quot;</span><span class="p">,</span> <span class="n">wordle_answers</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reduced_corpus</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&#39;SCARE&#39;, &#39;SCARF&#39;, &#39;SCARY&#39;, &#39;SHARD&#39;, &#39;SHARE&#39;, &#39;SMART&#39;, &#39;SNARE&#39;, &#39;SNARL&#39;, &#39;STARE&#39;, &#39;START&#39;, &#39;SWARM&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Instead of trying each of the possible answers, we can use a turn to reduce the amount of possible answers. For example, <code>THYME</code> would be a great word to use in this case. All but two of the possible answers will have unique sequences which we can use to narrow down the answer much faster in a much more repeatable way.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;       T H  Y M  E&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">reduced_corpus</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;THYME&quot;</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">word</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>       T H  Y M  E
+SCARE ⬜⬜⬜⬜🟩
+SCARF ⬜⬜⬜⬜⬜
+SCARY ⬜⬜🟨⬜⬜
+SHARD ⬜🟩⬜⬜⬜
+SHARE ⬜🟩⬜⬜🟩
+SMART 🟨⬜⬜🟨⬜
+SNARE ⬜⬜⬜⬜🟩
+SNARL ⬜⬜⬜⬜⬜
+STARE 🟨⬜⬜⬜🟩
+START 🟨⬜⬜⬜⬜
+SWARM ⬜⬜⬜🟨⬜
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can use this principle on all the the available words to find which one fits the best. Since we have the complete list of possible entries for Wordle, we can now iterate through the list, finding how many different combinations of sequences there are for each word and counting how many times each sequence occurs. Using that information, we can calculate the probability of each sequence occuring and also calculate the entropy that each sequence returns.</p>
+<p>Entropy in this case is a measure of how far we reduce the possible pool of answers. It can be calculated by taking the log-base 2 of the percentage of answers given that are possible for a given sequence.</p>
+$$
+I(E) = \log_2\left(\frac{1}{p(E)}\right)
+$$<p>For example, if we use the word <code>PIZZA</code> as a starting word, which would instictually be a bad starting word due to the double Zs, and get ⬜⬜⬜🟩⬜, we reduce our possible pool of answers from 12,972 to 25. That provides an entropy value of 9.02 bits.</p>
+<blockquote><p><code>BONZE</code>,
+ <code>BOOZE</code>,
+ <code>BOOZY</code>,
+ <code>CLOZE</code>,
+ <code>COOZE</code>,
+ <code>CROZE</code>,
+ <code>DOOZY</code>,
+ <code>FEEZE</code>,
+ <code>FORZE</code>,
+ <code>FROZE</code>,
+ <code>FURZE</code>,
+ <code>FURZY</code>,
+ <code>GLOZE</code>,
+ <code>GONZO</code>,
+ <code>HEEZE</code>,
+ <code>JEEZE</code>,
+ <code>KUDZU</code>,
+ <code>LEEZE</code>,
+ <code>NEEZE</code>,
+ <code>NUDZH</code>,
+ <code>TOUZE</code>,
+ <code>TOUZY</code>,
+ <code>TOWZE</code>,
+ <code>TOWZY</code>,
+ <code>WOOZY</code></p>
+</blockquote>
+<p>If instead, we got a more likely response of ⬜⬜⬜⬜⬜, we would reduce our pool of answers by a little over half, from 12,972 to 4,145.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">count_of_combos</span><span class="p">(</span><span class="n">guess</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">answers</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">sort</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">probability</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A function that takes in a list and a string and returns a list of index positions within the input list</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        guess (str): </span>
+<span class="sd">            A string to compare all the answers against</span>
+<span class="sd">            </span>
+<span class="sd">        answers (list): </span>
+<span class="sd">            A list containing all possible combinations of answers</span>
+<span class="sd">        </span>
+<span class="sd">        sort (bool): False</span>
+<span class="sd">            Sorts the return dictionary by value</span>
+<span class="sd">            </span>
+<span class="sd">        probability (bool): True</span>
+<span class="sd">            Converts the values in the dictionary to a probability</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: </span>
+<span class="sd">            list of index positions of item</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">increment_value</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    <span class="k">if</span> <span class="n">probability</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">increment_value</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
+        
+    <span class="k">for</span> <span class="n">ans</span> <span class="ow">in</span> <span class="n">answers</span><span class="p">:</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">color_sequence</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">ans</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">results_dict</span><span class="p">:</span>
+            <span class="n">results_dict</span><span class="p">[</span><span class="n">seq</span><span class="p">]</span> <span class="o">+=</span> <span class="n">increment_value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results_dict</span><span class="p">[</span><span class="n">seq</span><span class="p">]</span> <span class="o">=</span> <span class="n">increment_value</span>
+    <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+        <span class="n">results_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">results_dict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">results_dict</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">word</span> <span class="o">=</span> <span class="s2">&quot;PIZZA&quot;</span>
+<span class="n">word_combinations</span> <span class="o">=</span> <span class="n">count_of_combos</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">valid_entries</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sort</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data for Each Color Combinations for the Word </span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Sequence&#39;</span><span class="si">:</span><span class="s2">^12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Count&#39;</span><span class="si">:</span><span class="s2">&lt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;%&#39;</span><span class="si">:</span><span class="s2">&lt;5</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Bits&#39;</span><span class="si">}</span><span class="s2">     &quot;</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">word_combinations</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">| </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">value</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">valid_entries</span><span class="p">))</span><span class="si">:</span><span class="s2">&lt;5</span><span class="si">}</span><span class="s2">|</span><span class="si">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">%&#39;</span><span class="si">:</span><span class="s2">&gt;6s</span><span class="si">}</span><span class="s2">| </span><span class="si">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">value</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="si">:</span><span class="s2">&gt;5s</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;    &quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ind</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">()</span>
+    
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Data for Each Color Combinations for the Word PIZZA
+
+  Sequence    Count    %     Bits       Sequence    Count    %     Bits       Sequence    Count    %     Bits     
+⬜⬜⬜⬜⬜| 4145 |31.95%|  1.65    ⬜⬜⬜⬜🟨| 3167 |24.41%|  2.03    ⬜🟨⬜⬜⬜| 1190 | 9.17%|  3.45    
+⬜🟩⬜⬜⬜| 956  | 7.37%|  3.76    ⬜🟨⬜⬜🟨| 576  | 4.44%|  4.49    🟨⬜⬜⬜⬜| 442  | 3.41%|  4.88    
+⬜⬜⬜⬜🟩| 408  | 3.15%|  4.99    🟩⬜⬜⬜⬜| 358  | 2.76%|  5.18    🟨⬜⬜⬜🟨| 309  | 2.38%|  5.39    
+🟩⬜⬜⬜🟨| 219  | 1.69%|  5.89    ⬜🟩⬜⬜🟨| 136  | 1.05%|  6.58    🟨🟨⬜⬜⬜| 126  | 0.97%|  6.69    
+⬜🟨⬜⬜🟩| 84   | 0.65%|  7.27    🟩🟩⬜⬜⬜| 81   | 0.62%|  7.32    🟩🟨⬜⬜⬜| 79   | 0.61%|  7.36    
+⬜🟩⬜⬜🟩| 62   | 0.48%|  7.71    🟨🟩⬜⬜⬜| 58   | 0.45%|  7.81    🟩⬜⬜⬜🟩| 44   | 0.34%|  8.20    
+⬜⬜🟨⬜⬜| 42   | 0.32%|  8.27    ⬜⬜🟩⬜🟨| 41   | 0.32%|  8.31    🟨🟨⬜⬜🟨| 37   | 0.29%|  8.45    
+⬜⬜🟩⬜⬜| 36   | 0.28%|  8.49    ⬜⬜🟨⬜🟨| 35   | 0.27%|  8.53    🟩🟨⬜⬜🟨| 34   | 0.26%|  8.58    
+🟨⬜⬜⬜🟩| 30   | 0.23%|  8.76    ⬜⬜⬜🟩🟨| 26   | 0.20%|  8.96    ⬜⬜⬜🟩⬜| 25   | 0.19%|  9.02    
+🟩🟩⬜⬜🟨| 20   | 0.15%|  9.34    ⬜🟩🟨⬜⬜| 17   | 0.13%|  9.58    ⬜🟨🟨⬜⬜| 15   | 0.12%|  9.76    
+⬜🟩🟩⬜⬜| 14   | 0.11%|  9.86    ⬜🟨🟨⬜🟨| 13   | 0.10%|  9.96    ⬜⬜⬜🟩🟩| 12   | 0.09%| 10.08    
+⬜⬜🟩🟩⬜| 9    | 0.07%| 10.49    ⬜🟨🟩⬜⬜| 8    | 0.06%| 10.66    ⬜🟨⬜🟩🟨| 7    | 0.05%| 10.86    
+⬜⬜🟨⬜🟩| 7    | 0.05%| 10.86    ⬜🟩🟩🟩⬜| 6    | 0.05%| 11.08    ⬜🟨⬜🟩⬜| 6    | 0.05%| 11.08    
+🟩🟩⬜⬜🟩| 6    | 0.05%| 11.08    🟨🟨⬜⬜🟩| 5    | 0.04%| 11.34    ⬜🟩🟩⬜🟨| 4    | 0.03%| 11.66    
+⬜🟨🟨🟩⬜| 4    | 0.03%| 11.66    ⬜🟩⬜🟩⬜| 4    | 0.03%| 11.66    ⬜🟨🟩⬜🟨| 4    | 0.03%| 11.66    
+🟩🟨⬜⬜🟩| 4    | 0.03%| 11.66    🟨⬜🟨⬜🟨| 4    | 0.03%| 11.66    ⬜⬜🟩🟩🟩| 3    | 0.02%| 12.08    
+⬜⬜🟩🟩🟨| 3    | 0.02%| 12.08    🟨🟩⬜⬜🟩| 3    | 0.02%| 12.08    ⬜🟩🟨⬜🟨| 3    | 0.02%| 12.08    
+⬜⬜🟨🟩🟨| 2    | 0.02%| 12.66    ⬜🟨⬜🟩🟩| 2    | 0.02%| 12.66    🟨🟩⬜⬜🟨| 2    | 0.02%| 12.66    
+⬜🟨🟩🟨⬜| 2    | 0.02%| 12.66    🟩🟨⬜🟩⬜| 2    | 0.02%| 12.66    🟩🟩🟩⬜⬜| 2    | 0.02%| 12.66    
+⬜🟨🟨⬜🟩| 2    | 0.02%| 12.66    🟨🟩🟨⬜⬜| 2    | 0.02%| 12.66    ⬜🟩🟩🟨⬜| 2    | 0.02%| 12.66    
+🟨⬜🟨⬜🟩| 2    | 0.02%| 12.66    🟨🟨🟨⬜🟨| 1    | 0.01%| 13.66    ⬜🟩⬜🟩🟨| 1    | 0.01%| 13.66    
+⬜🟨🟩🟨🟨| 1    | 0.01%| 13.66    ⬜🟨🟩🟩🟨| 1    | 0.01%| 13.66    ⬜🟩⬜🟩🟩| 1    | 0.01%| 13.66    
+🟩⬜⬜🟩🟨| 1    | 0.01%| 13.66    🟩🟨🟨🟩⬜| 1    | 0.01%| 13.66    🟩🟩⬜🟩⬜| 1    | 0.01%| 13.66    
+🟩🟩🟩🟩🟩| 1    | 0.01%| 13.66    🟩⬜⬜🟩🟩| 1    | 0.01%| 13.66    🟩⬜🟨⬜⬜| 1    | 0.01%| 13.66    
+🟩⬜⬜🟩⬜| 1    | 0.01%| 13.66    🟩⬜🟩🟩⬜| 1    | 0.01%| 13.66    🟩⬜🟩⬜⬜| 1    | 0.01%| 13.66    
+🟩⬜🟨🟩🟨| 1    | 0.01%| 13.66    ⬜⬜🟨🟩⬜| 1    | 0.01%| 13.66    🟨⬜⬜🟩🟩| 1    | 0.01%| 13.66    
+🟨⬜🟨🟩🟨| 1    | 0.01%| 13.66    🟨🟨🟨⬜⬜| 1    | 0.01%| 13.66    🟨🟨🟩⬜⬜| 1    | 0.01%| 13.66    
+⬜⬜🟨🟩🟩| 1    | 0.01%| 13.66    ⬜⬜🟩🟨🟨| 1    | 0.01%| 13.66    ⬜⬜🟩🟨⬜| 1    | 0.01%| 13.66    
+⬜🟩🟨⬜🟩| 1    | 0.01%| 13.66    🟨⬜🟨⬜⬜| 1    | 0.01%| 13.66    </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can now take the weight each combinations entropy by the probability of it occuring to get the entropy for each word and summing them all together to get the total entropy calculated for each word.</p>
+<p>
+$$H(X) = \sum {p} \log_2(\frac{1}{p}) $$
+</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">sum_entropy_calculation</span><span class="p">(</span><span class="n">combinations</span><span class="p">):</span>
+    <span class="n">entropy</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">combinations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">entropy</span> <span class="o">+=</span> <span class="n">value</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">entropy</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The calculated entropy for the </span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">sum_entropy_calculation</span><span class="p">(</span><span class="n">word_combinations</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Sh&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The calculated entropy for the PIZZA is 3.27 Sh
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now that we can calculate the entropy for one word, we can calculate the entropy for all of them by iterating over the list of words in the corpus.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">entropy_df</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">corpus</span><span class="p">):</span>
+    <span class="n">entropy_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+        <span class="n">combs</span> <span class="o">=</span> <span class="n">count_of_combos</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+        <span class="n">entropy_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_entropy_calculation</span><span class="p">(</span><span class="n">combs</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">entropy_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span> 
+                      <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">,</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;ENTROPY&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;WORD&#39;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">entropy_df</span><span class="p">(</span><span class="n">valid_entries</span><span class="p">,</span> <span class="n">wordle_answers</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here are the top 10 starting words based on entropy.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ENTROPY</th>
+    </tr>
+    <tr>
+      <th>WORD</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>SOARE</th>
+      <td>5.885960</td>
+    </tr>
+    <tr>
+      <th>ROATE</th>
+      <td>5.882779</td>
+    </tr>
+    <tr>
+      <th>RAISE</th>
+      <td>5.877910</td>
+    </tr>
+    <tr>
+      <th>RAILE</th>
+      <td>5.865710</td>
+    </tr>
+    <tr>
+      <th>REAST</th>
+      <td>5.865457</td>
+    </tr>
+    <tr>
+      <th>SLATE</th>
+      <td>5.855775</td>
+    </tr>
+    <tr>
+      <th>CRATE</th>
+      <td>5.834874</td>
+    </tr>
+    <tr>
+      <th>SALET</th>
+      <td>5.834582</td>
+    </tr>
+    <tr>
+      <th>IRATE</th>
+      <td>5.831397</td>
+    </tr>
+    <tr>
+      <th>TRACE</th>
+      <td>5.830549</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>and here are the 10 worst starting words. Unsuprisingly, many of them have duplicate and triplicate letters.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ENTROPY</th>
+    </tr>
+    <tr>
+      <th>WORD</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>QAJAQ</th>
+      <td>1.891836</td>
+    </tr>
+    <tr>
+      <th>JUJUS</th>
+      <td>2.038309</td>
+    </tr>
+    <tr>
+      <th>IMMIX</th>
+      <td>2.052600</td>
+    </tr>
+    <tr>
+      <th>XYLYL</th>
+      <td>2.192001</td>
+    </tr>
+    <tr>
+      <th>YUKKY</th>
+      <td>2.205266</td>
+    </tr>
+    <tr>
+      <th>PZAZZ</th>
+      <td>2.214171</td>
+    </tr>
+    <tr>
+      <th>JAFFA</th>
+      <td>2.234170</td>
+    </tr>
+    <tr>
+      <th>FUFFY</th>
+      <td>2.243640</td>
+    </tr>
+    <tr>
+      <th>KUDZU</th>
+      <td>2.264022</td>
+    </tr>
+    <tr>
+      <th>GYPPY</th>
+      <td>2.285137</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Follow-Up-Guesses">Follow Up Guesses<a class="anchor-link" href="#Follow-Up-Guesses"> </a></h2><p>Since we know the best starting word is <code>SOARE</code>, we can calculate what the next best word will be based on the sequence we get from <code>SOARE</code> The sequences below and their associated word yield the best entropy for the second term. Most of the time, the answer can be achieved in 3 guessses.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">word</span> <span class="o">=</span> <span class="s2">&quot;SOARE&quot;</span>
+
+<span class="n">ind</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">count_of_combos</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">wordle_answers</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">sequence</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+    <span class="n">corpus</span> <span class="o">=</span> <span class="n">wordle_answers</span>
+    <span class="n">corpus</span> <span class="o">=</span> <span class="n">get_words_using_sequence</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+    
+    <span class="n">super_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">answer</span> <span class="ow">in</span> <span class="n">wordle_answers</span><span class="p">:</span>
+        <span class="n">combs</span> <span class="o">=</span> <span class="n">count_of_combos</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+        <span class="n">super_dict</span><span class="p">[</span><span class="n">answer</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_entropy_calculation</span><span class="p">(</span><span class="n">combs</span><span class="p">)</span>
+        
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">super_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">,</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">corpus</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">,</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="kc">False</span> <span class="k">if</span> <span class="n">entropy</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">in_corpus</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">entropy</span><span class="p">,</span> <span class="n">in_corpus</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">])]]</span>    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="kc">False</span> <span class="k">if</span> <span class="n">entropy</span> <span class="o">==</span> <span class="mi">0</span>  <span class="ow">and</span> <span class="n">in_corpus</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">entropy</span><span class="p">,</span> <span class="n">in_corpus</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">])]]</span>    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>    
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sequence</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;WORD&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;ENTROPY&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;  &quot;</span><span class="p">)</span>
+    <span class="n">ind</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">ind</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>⬜⬜⬜⬜⬜ LUNCH: 5.24  ⬜⬜⬜⬜🟨 BETEL: 5.02  ⬜⬜⬜⬜🟩 GUILT: 5.07  ⬜⬜⬜🟨⬜ GLINT: 4.66  
+⬜⬜⬜🟨🟨 DETER: 4.40  ⬜⬜⬜🟨🟩 TRUMP: 3.81  ⬜⬜⬜🟩⬜ TOUCH: 3.55  ⬜⬜⬜🟩🟨 BEEFY: 3.32  
+⬜⬜⬜🟩🟩 THERE: 2.00  ⬜⬜🟨⬜⬜ MINTY: 4.87  ⬜⬜🟨⬜🟨 CANAL: 4.59  ⬜⬜🟨⬜🟩 LAUGH: 3.87  
+⬜⬜🟨🟨⬜ RADAR: 4.21  ⬜⬜🟨🟨🟨 BETEL: 3.59  ⬜⬜🟨🟨🟩 CAROL: 2.81  ⬜⬜🟨🟩⬜ MARCH: 3.10  
+⬜⬜🟨🟩🟨 ALTAR: 2.32  ⬜⬜🟨🟩🟩 AFIRE: 1.00  ⬜⬜🟩⬜⬜ CLINK: 4.60  ⬜⬜🟩⬜🟨 DEPTH: 3.75  
+⬜⬜🟩⬜🟩 CLUNG: 3.12  ⬜⬜🟩🟨⬜ GLINT: 4.02  ⬜⬜🟩🟨🟨 ADMIT: 2.00  ⬜⬜🟩🟨🟩 DITCH: 2.97  
+⬜⬜🟩🟩⬜ AUDIT: 3.39  ⬜⬜🟩🟩🟨 HANDY: 2.73  ⬜⬜🟩🟩🟩 BAGEL: 2.00  ⬜🟨⬜⬜⬜ GLINT: 4.81  
+⬜🟨⬜⬜🟨 DEMON: 3.91  ⬜🟨⬜⬜🟩 CLINK: 3.78  ⬜🟨⬜🟨⬜ TUNIC: 3.95  ⬜🟨⬜🟨🟨 DETER: 3.03  
+⬜🟨⬜🟨🟩 PINTO: 2.69  ⬜🟨⬜🟩⬜ CYNIC: 3.00  ⬜🟨⬜🟩🟨 METRO: 1.58  ⬜🟨⬜🟩🟩 CHORE: 1.00  
+⬜🟨🟨⬜⬜ BLUNT: 4.28  ⬜🟨🟨⬜🟨 CAMEO: 2.00  ⬜🟨🟨⬜🟩 ABLED: 2.75  ⬜🟨🟨🟨⬜ BARON: 3.63  
+⬜🟨🟨🟩⬜ ABACK: 2.58  ⬜🟨🟨🟩🟨 OPERA: 0.00  ⬜🟨🟨🟩🟩 ADORE: 0.00  ⬜🟨🟩⬜⬜ PIANO: 0.00  
+⬜🟨🟩⬜🟩 OVATE: 0.00  ⬜🟨🟩🟨⬜ BRAVO: 0.00  ⬜🟨🟩🟩⬜ OVARY: 0.00  ⬜🟩⬜⬜⬜ LUNCH: 4.24  
+⬜🟩⬜⬜🟨 MONTH: 3.43  ⬜🟩⬜⬜🟩 CLOUD: 3.32  ⬜🟩⬜🟨⬜ MUNCH: 3.71  ⬜🟩⬜🟨🟨 WATCH: 2.40  
+⬜🟩⬜🟨🟩 FIGHT: 2.95  ⬜🟩⬜🟩⬜ ADULT: 2.58  ⬜🟩🟨⬜⬜ DELTA: 3.42  ⬜🟩🟨🟨⬜ BALMY: 3.00  
+⬜🟩🟨🟩⬜ COBRA: 0.00  ⬜🟩🟩⬜⬜ LOAMY: 2.32  ⬜🟩🟩🟨⬜ ROACH: 0.00  ⬜🟩🟩🟩⬜ BOARD: 1.00  
+🟨⬜⬜⬜⬜ MIGHT: 4.25  🟨⬜⬜⬜🟨 BUILT: 3.62  🟨⬜⬜⬜🟩 INEPT: 3.00  🟨⬜⬜🟨⬜ TRUCK: 3.62  
+🟨⬜⬜🟨🟨 WITCH: 3.27  🟨⬜⬜🟨🟩 COUNT: 2.81  🟨⬜⬜🟩⬜ USURP: 0.00  🟨⬜🟨⬜⬜ UNITY: 3.90  
+🟨⬜🟨⬜🟨 ANKLE: 2.32  🟨⬜🟨⬜🟩 THUMP: 3.14  🟨⬜🟨🟨⬜ HARSH: 2.00  🟨⬜🟨🟨🟩 ARISE: 1.58  
+🟨⬜🟩⬜⬜ GULCH: 3.32  🟨⬜🟩⬜🟨 LEFTY: 2.32  🟨⬜🟩⬜🟩 BELCH: 2.81  🟨⬜🟩🟨⬜ PATCH: 2.52  
+🟨⬜🟩🟨🟩 ERASE: 0.00  🟨🟨⬜⬜⬜ ALONG: 2.81  🟨🟨⬜⬜🟨 ONSET: 1.58  🟨🟨⬜⬜🟩 BATCH: 2.32  
+🟨🟨⬜🟨⬜ DIGIT: 2.32  🟨🟨⬜🟨🟨 VERSO: 0.00  🟨🟨⬜🟨🟩 PROSE: 0.00  🟨🟨🟨⬜⬜ ASCOT: 1.58  
+🟨🟨🟨🟨⬜ ARSON: 0.00  🟨🟨🟨🟨🟩 AROSE: 0.00  🟨🟨🟩⬜⬜ CHAOS: 0.00  🟨🟩⬜⬜⬜ THUMB: 3.46  
+🟨🟩⬜⬜🟨 NOSEY: 1.00  🟨🟩⬜⬜🟩 CUMIN: 2.85  🟨🟩⬜🟨⬜ ROOST: 2.00  🟨🟩⬜🟨🟨 LOSER: 1.00  
+🟨🟩⬜🟨🟩 HORSE: 1.58  🟨🟩🟩⬜⬜ ABACK: 1.58  🟨🟩🟩🟨⬜ ROAST: 0.00  🟩⬜⬜⬜⬜ THINK: 4.84  
+🟩⬜⬜⬜🟨 SPILT: 4.23  🟩⬜⬜⬜🟩 CLINK: 3.71  🟩⬜⬜🟨⬜ BUTCH: 3.17  🟩⬜⬜🟨🟨 HENCE: 3.03  
+🟩⬜⬜🟨🟩 SCREE: 2.00  🟩⬜⬜🟩⬜ FILTH: 3.00  🟩⬜⬜🟩🟨 SPERM: 1.00  🟩⬜⬜🟩🟩 SHIRE: 1.00  
+🟩⬜🟨⬜⬜ ADULT: 3.58  🟩⬜🟨⬜🟨 KNELT: 2.95  🟩⬜🟨⬜🟩 SAUCE: 1.58  🟩⬜🟨🟨⬜ EMPTY: 3.00  
+🟩⬜🟨🟨🟨 HUMAN: 2.25  🟩⬜🟩⬜⬜ THINK: 4.17  🟩⬜🟩⬜🟩 CLOTH: 3.03  🟩⬜🟩🟨⬜ STAIR: 0.00  
+🟩⬜🟩🟩⬜ THICK: 2.73  🟩⬜🟩🟩🟩 CHANT: 2.32  🟩🟨⬜⬜⬜ PUNCH: 3.80  🟩🟨⬜⬜🟩 KNELT: 2.92  
+🟩🟨⬜🟨⬜ SCOUR: 0.00  🟩🟨⬜🟩⬜ CHANT: 2.85  🟩🟨⬜🟩🟩 CHANT: 2.25  🟩🟨🟨⬜⬜ SALON: 2.00  
+🟩🟨🟨🟨⬜ SAVOR: 0.00  🟩🟩⬜⬜⬜ AUNTY: 2.81  🟩🟩⬜⬜🟩 SOLVE: 0.00  🟩🟩⬜🟨🟨 SOBER: 1.00  
+🟩🟩⬜🟩⬜ SORRY: 0.00  🟩🟩🟨🟨⬜ SOLAR: 1.00  🟩🟩🟩⬜⬜ SOAPY: 0.00  </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Hard-Mode">Hard Mode<a class="anchor-link" href="#Hard-Mode"> </a></h2><p>Hard mode is a mode where the player needs to use the letters they've unlocked in subsequence guesses. This makes narrowing down the correct answer a little trickier, but we should still be able to narrow down our pool of guesses relatively quickly.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">corpus</span> <span class="o">=</span> <span class="n">wordle_answers</span>
+
+<span class="n">guess</span> <span class="o">=</span> <span class="s2">&quot;SOARE&quot;</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">best_response</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">combinations</span><span class="p">):</span>
+    <span class="n">new_corpus</span> <span class="o">=</span> <span class="n">get_words_using_sequence</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+    <span class="n">super_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">answer</span> <span class="ow">in</span> <span class="n">new_corpus</span><span class="p">:</span>
+        <span class="n">combs</span> <span class="o">=</span> <span class="n">count_of_combos</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">new_corpus</span><span class="p">)</span>
+        <span class="n">super_dict</span><span class="p">[</span><span class="n">answer</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_entropy_calculation</span><span class="p">(</span><span class="n">combs</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">super_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">,</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">new_corpus</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">,</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;WORD&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;ENTROPY&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;  &quot;</span><span class="p">)</span>
+        <span class="n">ind</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">ind</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>⬜⬜⬜⬜⬜ LUNCH: 5.24  ⬜⬜⬜⬜🟨 BETEL: 5.02  ⬜⬜⬜⬜🟩 GUILE: 4.54  ⬜⬜⬜🟨⬜ TRICK: 4.40  
+⬜⬜⬜🟨🟨 DETER: 4.40  ⬜⬜⬜🟨🟩 TRIPE: 3.52  ⬜⬜⬜🟩⬜ CHURN: 3.09  ⬜⬜⬜🟩🟨 FERRY: 2.84  
+⬜⬜⬜🟩🟩 THERE: 2.00  ⬜⬜🟨⬜⬜ NATAL: 4.81  ⬜⬜🟨⬜🟨 PLEAT: 4.50  ⬜⬜🟨⬜🟩 ANGLE: 3.67  
+⬜⬜🟨🟨⬜ RADAR: 4.21  ⬜⬜🟨🟨🟨 LATER: 3.49  ⬜⬜🟨🟨🟩 CARVE: 2.52  ⬜⬜🟨🟩⬜ HAIRY: 2.66  
+⬜⬜🟨🟩🟨 ALERT: 1.92  ⬜⬜🟨🟩🟩 AFIRE: 1.00  ⬜⬜🟩⬜⬜ CLANK: 4.24  ⬜⬜🟩⬜🟨 DEATH: 3.49  
+⬜⬜🟩⬜🟩 PLATE: 2.53  ⬜⬜🟩🟨⬜ DRAWN: 3.25  ⬜⬜🟩🟨🟨 REACH: 1.50  ⬜⬜🟩🟨🟩 CRATE: 2.29  
+⬜⬜🟩🟩⬜ AWARD: 2.78  ⬜⬜🟩🟩🟨 TEARY: 1.88  ⬜⬜🟩🟩🟩 BLARE: 1.50  ⬜🟨⬜⬜⬜ BLOOD: 4.44  
+⬜🟨⬜⬜🟨 DEMON: 3.91  ⬜🟨⬜⬜🟩 CLONE: 3.32  ⬜🟨⬜🟨⬜ FRONT: 3.61  ⬜🟨⬜🟨🟨 TENOR: 2.72  
+⬜🟨⬜🟨🟩 PROVE: 2.07  ⬜🟨⬜🟩⬜ CHORD: 2.75  ⬜🟨⬜🟩🟨 METRO: 1.58  ⬜🟨⬜🟩🟩 CHORE: 1.00  
+⬜🟨🟨⬜⬜ BLOAT: 4.26  ⬜🟨🟨⬜🟨 CAMEO: 2.00  ⬜🟨🟨⬜🟩 ANODE: 2.50  ⬜🟨🟨🟨⬜ BARON: 3.63  
+⬜🟨🟨🟩⬜ ACORN: 2.25  ⬜🟨🟨🟩🟨 OPERA: 0.00  ⬜🟨🟨🟩🟩 ADORE: 0.00  ⬜🟨🟩⬜⬜ PIANO: 0.00  
+⬜🟨🟩⬜🟩 OVATE: 0.00  ⬜🟨🟩🟨⬜ BRAVO: 0.00  ⬜🟨🟩🟩⬜ OVARY: 0.00  ⬜🟩⬜⬜⬜ DONUT: 3.87  
+⬜🟩⬜⬜🟨 MOTEL: 3.00  ⬜🟩⬜⬜🟩 VOGUE: 2.72  ⬜🟩⬜🟨⬜ NORTH: 3.49  ⬜🟩⬜🟨🟨 ROWER: 2.11  
+⬜🟩⬜🟨🟩 FORGE: 2.73  ⬜🟩⬜🟩⬜ DOWRY: 2.25  ⬜🟩🟨⬜⬜ NOMAD: 3.33  ⬜🟩🟨🟨⬜ MORAL: 2.75  
+⬜🟩🟨🟩⬜ COBRA: 0.00  ⬜🟩🟩⬜⬜ LOAMY: 2.32  ⬜🟩🟩🟨⬜ ROACH: 0.00  ⬜🟩🟩🟩⬜ BOARD: 1.00  
+🟨⬜⬜⬜⬜ MUSHY: 4.10  🟨⬜⬜⬜🟨 GUEST: 3.58  🟨⬜⬜⬜🟩 DENSE: 2.75  🟨⬜⬜🟨⬜ CRUST: 3.58  
+🟨⬜⬜🟨🟨 RESET: 2.97  🟨⬜⬜🟨🟩 CURSE: 2.24  🟨⬜⬜🟩⬜ USURP: 0.00  🟨⬜🟨⬜⬜ NASTY: 3.80  
+🟨⬜🟨⬜🟨 ASHEN: 1.92  🟨⬜🟨⬜🟩 LAPSE: 2.87  🟨⬜🟨🟨⬜ HARSH: 2.00  🟨⬜🟨🟨🟩 ARISE: 1.58  
+🟨⬜🟩⬜⬜ CLASH: 2.84  🟨⬜🟩⬜🟨 BEAST: 1.37  🟨⬜🟩⬜🟩 CEASE: 2.24  🟨⬜🟩🟨⬜ CRASH: 1.84  
+🟨⬜🟩🟨🟩 ERASE: 0.00  🟨🟨⬜⬜⬜ GLOSS: 2.52  🟨🟨⬜⬜🟨 ONSET: 1.58  🟨🟨⬜⬜🟩 CHOSE: 1.92  
+🟨🟨⬜🟨⬜ CROSS: 1.92  🟨🟨⬜🟨🟨 VERSO: 0.00  🟨🟨⬜🟨🟩 PROSE: 0.00  🟨🟨🟨⬜⬜ ASCOT: 1.58  
+🟨🟨🟨🟨⬜ ARSON: 0.00  🟨🟨🟨🟨🟩 AROSE: 0.00  🟨🟨🟩⬜⬜ CHAOS: 0.00  🟨🟩⬜⬜⬜ MOIST: 3.01  
+🟨🟩⬜⬜🟨 NOSEY: 1.00  🟨🟩⬜⬜🟩 POISE: 1.67  🟨🟩⬜🟨⬜ ROOST: 2.00  🟨🟩⬜🟨🟨 LOSER: 1.00  
+🟨🟩⬜🟨🟩 HORSE: 1.58  🟨🟩🟩⬜⬜ BOAST: 0.92  🟨🟩🟩🟨⬜ ROAST: 0.00  🟩⬜⬜⬜⬜ STINK: 4.43  
+🟩⬜⬜⬜🟨 SPELT: 4.15  🟩⬜⬜⬜🟩 SPINE: 3.11  🟩⬜⬜🟨⬜ SCRUB: 2.42  🟩⬜⬜🟨🟨 SHEER: 2.72  
+🟩⬜⬜🟨🟩 SCREE: 2.00  🟩⬜⬜🟩⬜ SHIRT: 2.50  🟩⬜⬜🟩🟨 SPERM: 1.00  🟩⬜⬜🟩🟩 SHIRE: 1.00  
+🟩⬜🟨⬜⬜ SAUNA: 3.22  🟩⬜🟨⬜🟨 STEAD: 2.42  🟩⬜🟨⬜🟩 SAUCE: 1.58  🟩⬜🟨🟨⬜ SCRAP: 2.75  
+🟩⬜🟨🟨🟨 SHEAR: 1.46  🟩⬜🟩⬜⬜ SLANT: 3.48  🟩⬜🟩⬜🟩 SLATE: 2.29  🟩⬜🟩🟨⬜ STAIR: 0.00  
+🟩⬜🟩🟩⬜ STARK: 1.87  🟩⬜🟩🟩🟩 SCARE: 0.72  🟩🟨⬜⬜⬜ STOOP: 3.28  🟩🟨⬜⬜🟩 STOKE: 2.05  
+🟩🟨⬜🟨⬜ SCOUR: 0.00  🟩🟨⬜🟩⬜ SHORT: 2.17  🟩🟨⬜🟩🟩 SCORE: 0.65  🟩🟨🟨⬜⬜ SALON: 2.00  
+🟩🟨🟨🟨⬜ SAVOR: 0.00  🟩🟩⬜⬜⬜ SOOTY: 2.13  🟩🟩⬜⬜🟩 SOLVE: 0.00  🟩🟩⬜🟨🟨 SOBER: 1.00  
+🟩🟩⬜🟩⬜ SORRY: 0.00  🟩🟩🟨🟨⬜ SOLAR: 1.00  🟩🟩🟩⬜⬜ SOAPY: 0.00  </pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">corpus</span> <span class="o">=</span> <span class="n">wordle_answers</span>
+
+<span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">corpus</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">guess</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;GUESS: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Response: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;G&quot;</span><span class="p">,</span><span class="s2">&quot;🟩&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span><span class="s2">&quot;🟨&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span><span class="s2">&quot;⬜&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">corpus</span> <span class="o">=</span> <span class="n">get_words_using_sequence</span><span class="p">(</span><span class="n">guess</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+    
+    <span class="n">super_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">answer</span> <span class="ow">in</span> <span class="n">valid_entries</span><span class="p">:</span>
+        <span class="n">combs</span> <span class="o">=</span> <span class="n">count_of_combos</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+        <span class="n">super_dict</span><span class="p">[</span><span class="n">answer</span><span class="p">]</span> <span class="o">=</span> <span class="n">sum_entropy_calculation</span><span class="p">(</span><span class="n">combs</span><span class="p">)</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">super_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">,</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">corpus</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">,</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="kc">False</span> <span class="k">if</span> <span class="n">entropy</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">in_corpus</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">entropy</span><span class="p">,</span> <span class="n">in_corpus</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">])]]</span>    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="kc">False</span> <span class="k">if</span> <span class="n">entropy</span> <span class="o">==</span> <span class="mi">0</span>  <span class="ow">and</span> <span class="n">in_corpus</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">entropy</span><span class="p">,</span> <span class="n">in_corpus</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ENTROPY&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">])]]</span>    
+    <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;WORD&#39;</span><span class="p">,</span><span class="s1">&#39;IN_CORPUS&#39;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Possible Answers&#39;</span><span class="p">,</span> <span class="n">corpus</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Entropy Calculations&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+    
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GUESS: MOUSE
+Response: GGGGG
+🟩🟩🟩🟩🟩
+Possible Answers [&#39;MOUSE&#39;]
+Entropy Calculations
+       ENTROPY
+WORD          
+MOUSE      0.0
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+  </div><a class="u-url" href="/blog/2022/02/04/wordle_information_theory.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>An easy to use blogging platform with support for Jupyter Notebooks.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/fastai" target="_blank" title="fastai"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/fastdotai" target="_blank" title="fastdotai"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
